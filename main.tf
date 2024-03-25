@@ -2,58 +2,44 @@
 
 
 locals {
-  is_windows = var.oper_system == "windows"
   is_mac     = var.oper_system == "mac"
   is_linux   = var.oper_system == "linux"
   is_amd64   = var.architecture == "amd64"
   is_arm64   = var.architecture == "arm64"
   is_ppc64le = var.architecture == "ppc64le"
 
-  client_url    = local.is_arm64 ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}-${var.architecture}.tar.gz" : (
-  local.is_linux && local.is_amd64 ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}-${var.architecture}.tar.gz" : (
-  local.is_linux && local.is_ppc64le ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}.tar.gz" : "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}.tar.gz"
-  )
-  )
+  arch_suffix    = local.is_arm64 || (local.is_linux && local.is_amd64) ? "-${var.architecture}" : ""
+  file_suffix    = local.is_linux && local.is_ppc64le ? "" : local.arch_suffix
+  base_url       = "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}"
 
-  installer_url = local.is_arm64 ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}-${var.architecture}.tar.gz" : (
-  local.is_linux && local.is_amd64 ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}-${var.architecture}.tar.gz" : (
-  local.is_linux && local.is_ppc64le ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}.tar.gz" : "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}.tar.gz"
-  )
-  )
-
-  client_path    = local.is_arm64 || (local.is_linux && local.is_amd64) ? "./openshift-client-${var.oper_system}-${var.architecture}.tar.gz" : "./openshift-client-${var.oper_system}.tar.gz"
-  installer_path = local.is_arm64 || (local.is_linux && local.is_amd64) ? "./openshift-install-${var.oper_system}-${var.architecture}.tar.gz" : "./openshift-install-${var.oper_system}.tar.gz"
+  client_url     = "${local.base_url}/openshift-client-${var.oper_system}${local.file_suffix}.tar.gz"
+  installer_url  = "${local.base_url}/openshift-install-${var.oper_system}${local.file_suffix}.tar.gz"
+  client_path    = "./openshift-client-${var.oper_system}${local.file_suffix}.tar.gz"
+  installer_path = "./openshift-install-${var.oper_system}${local.file_suffix}.tar.gz"
   output_path    = "./"
+
 }
 
 resource "null_resource" "download_decompress_client" {
   provisioner "local-exec" {
-    command = local.is_windows ? (
-      local.is_amd64 ? "curl -L -o ${local.client_path} '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}" : "echo 'Unsupported architecture for Windows'"
+    command = local.is_mac ? (
+    "curl -L -o ${local.client_path} '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}"
     ) : (
-      local.is_mac ? (
-        local.is_amd64 || local.is_arm64 ? "curl -L -o ${local.client_path} '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}" : "echo 'Unsupported architecture for Mac'"
-      ) : (
-        local.is_linux ? (
-          local.is_amd64 || local.is_ppc64le ? "curl -O '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}" : "echo 'Unsupported architecture for Linux'"
-        ) : "echo 'Unsupported operating system'"
-      )
+    local.is_linux ? (
+    "curl -O '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}"
+    ) : "echo 'Unsupported operating system'"
     )
   }
 }
 
 resource "null_resource" "download_decompress_installer" {
   provisioner "local-exec" {
-    command = local.is_windows ? (
-      local.is_amd64 ? "curl -L -o ${local.installer_path} '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}" : "echo 'Unsupported architecture for Windows'"
+    command = local.is_mac ? (
+    "curl -L -o ${local.installer_path} '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}"
     ) : (
-      local.is_mac ? (
-        local.is_amd64 || local.is_arm64 ? "curl -L -o ${local.installer_path} '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}" : "echo 'Unsupported architecture for Mac'"
-      ) : (
-        local.is_linux ? (
-          local.is_amd64 || local.is_ppc64le ? "curl -O '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}" : "echo 'Unsupported architecture for Linux'"
-        ) : "echo 'Unsupported operating system'"
-      )
+    local.is_linux ? (
+    "curl -O '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}"
+    ) : "echo 'Unsupported operating system'"
     )
   }
 }
@@ -103,7 +89,7 @@ resource "local_file" "install_config" {
 resource "null_resource" "create_manifests" {
   depends_on = [null_resource.download_decompress_installer]
   provisioner "local-exec" {
-    command = local.is_windows ? "openshift-install.exe create manifests" : "./openshift-install create manifests"
+    command = "./openshift-install create manifests"
   }
 }
 
@@ -111,25 +97,20 @@ resource "null_resource" "create_ignition_configs" {
   depends_on = [null_resource.create_manifests]
 
   provisioner "local-exec" {
-    command = local.is_windows ? "openshift-install.exe create ignition-configs" : "./openshift-install create ignition-configs"
+    command = "./openshift-install create ignition-configs"
   }
 }
 
 resource "null_resource" "copy_ign_files" {
   depends_on = [null_resource.create_ignition_configs]
-
   provisioner "local-exec" {
-    command = local.is_windows ? (
-    "Copy-Item -Path '.\\*.ign' -Destination '..\\3zoneocp\\'"
-    ) : (
-    "cp ./*.ign ../3zoneocp/"
-    )
+    command = "cp ./*.ign ../3zoneocp/"
   }
 }
 
 resource "null_resource" "create_kube_directory" {
   provisioner "local-exec" {
-    command = local.is_windows ? ( "$kubeConfigDir = [System.Environment]::GetFolderPath('UserProfile') + '\\.kube'; if (!(Test-Path $kubeConfigDir)) { New-Item -ItemType Directory -Path $kubeConfigDir | Out-Null }" ) : ( "mkdir -p ~/.kube" )
+    command = "mkdir -p ~/.kube"
   }
 }
 
@@ -137,6 +118,6 @@ resource "null_resource" "copy_kubeconfig" {
   depends_on = [null_resource.create_ignition_configs, null_resource.create_kube_directory]
 
   provisioner "local-exec" {
-    command = local.is_windows ? ( "$kubeConfigPath = [System.Environment]::GetFolderPath('UserProfile') + '\\.kube\\config'; Copy-Item -Path '.\\auth\\kubeconfig' -Destination $kubeConfigPath" ) : ( "cp ./auth/kubeconfig ~/.kube/config" )
+    command = "cp ./auth/kubeconfig ~/.kube/config"
   }
 }
