@@ -1,14 +1,4 @@
-variable "oper_system" {
-  description = "The target operating system for file download and decompression"
-  type        = string
-  default     = "linux" #Valid Operating systems are linux, mac and windows
-}
 
-variable "architecture" {
-  description = "The target architecture for file download and decompression"
-  type        = string
-  default     = "amd64" #Valid Architectures are amd64, arm64 and ppc64le
-}
 
 
 locals {
