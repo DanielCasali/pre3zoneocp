@@ -29,7 +29,7 @@ locals {
 resource "null_resource" "download_decompress_client" {
   provisioner "local-exec" {
     command = local.is_windows ? (
-      local.is_amd64 ? "powershell.exe -Command \"Invoke-WebRequest -Uri '${local.client_url}' -OutFile '${local.client_path}'; tar -xzf '${local.client_path}' -C '${local.output_path}'; Remove-Item '${local.client_path}'\"" : "echo 'Unsupported architecture for Windows'"
+      local.is_amd64 ? "curl -L -o ${local.client_path} '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}" : "echo 'Unsupported architecture for Windows'"
     ) : (
       local.is_mac ? (
         local.is_amd64 || local.is_arm64 ? "curl -L -o ${local.client_path} '${local.client_url}' && tar -xzf ${local.client_path} -C '${local.output_path}' && rm ${local.client_path}" : "echo 'Unsupported architecture for Mac'"
@@ -45,7 +45,7 @@ resource "null_resource" "download_decompress_client" {
 resource "null_resource" "download_decompress_installer" {
   provisioner "local-exec" {
     command = local.is_windows ? (
-      local.is_amd64 ? "powershell.exe -Command \"Invoke-WebRequest -Uri '${local.installer_url}' -OutFile '${local.installer_path}'; tar -xzf '${local.installer_path}' -C '${local.output_path}'; Remove-Item '${local.installer_path}'\"" : "echo 'Unsupported architecture for Windows'"
+      local.is_amd64 ? "curl -L -o ${local.installer_path} '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}" : "echo 'Unsupported architecture for Windows'"
     ) : (
       local.is_mac ? (
         local.is_amd64 || local.is_arm64 ? "curl -L -o ${local.installer_path} '${local.installer_url}' && tar -xzf ${local.installer_path} -C '${local.output_path}' && rm ${local.installer_path}" : "echo 'Unsupported architecture for Mac'"
