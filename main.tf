@@ -103,7 +103,7 @@ resource "local_file" "install_config" {
 resource "null_resource" "create_manifests" {
   depends_on = [null_resource.download_decompress_installer]
   provisioner "local-exec" {
-    command = "./openshift-install create manifests"
+    command = local.is_windows ? "openshift-install.exe create manifests" : "./openshift-install create manifests"
   }
 }
 
@@ -111,7 +111,7 @@ resource "null_resource" "create_ignition_configs" {
   depends_on = [null_resource.create_manifests]
 
   provisioner "local-exec" {
-    command = "./openshift-install create ignition-configs"
+    command = local.is_windows ? "openshift-install.exe create ignition-configs" : "./openshift-install create ignition-configs"
   }
 }
 
