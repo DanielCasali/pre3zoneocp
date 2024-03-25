@@ -101,6 +101,7 @@ resource "local_file" "install_config" {
 }
 
 resource "null_resource" "create_manifests" {
+  depends_on = [null_resource.download_decompress_installer]
   provisioner "local-exec" {
     command = "./openshift-install create manifests"
   }
