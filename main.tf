@@ -19,8 +19,8 @@ locals {
   is_arm64   = var.architecture == "arm64"
   is_ppc64le = var.architecture == "ppc64le"
 
-  client_url    = local.is_linux && local.is_ppc64le ? "https://mirror.openshift.com/pub/openshift-v4/${var.architecture}/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}.tar.gz" : "https://mirror.openshift.com/pub/openshift-v4/${var.architecture}/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}-${var.architecture}.tar.gz"
-  installer_url = local.is_linux && local.is_ppc64le ? "https://mirror.openshift.com/pub/openshift-v4/${var.architecture}/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}.tar.gz" : "https://mirror.openshift.com/pub/openshift-v4/${var.architecture}/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}-${var.architecture}.tar.gz"
+  client_url    = local.is_linux && local.is_ppc64le ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}.tar.gz" : "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-client-${var.oper_system}-${var.architecture}.tar.gz"
+  installer_url = local.is_linux && local.is_ppc64le ? "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}.tar.gz" : "https://mirror.openshift.com/pub/openshift-v4/ppc64le/clients/ocp/stable-${var.ocp_config.ocp_version}/openshift-install-${var.oper_system}-${var.architecture}.tar.gz"
   client_path    = local.is_linux && local.is_ppc64le ? "./openshift-client-${var.oper_system}.tar.gz" : "./openshift-client-${var.oper_system}-${var.architecture}.tar.gz"
   installer_path = local.is_linux && local.is_ppc64le ? "./openshift-install-${var.oper_system}.tar.gz" : "./openshift-install-${var.oper_system}-${var.architecture}.tar.gz"
   output_path    = "./"
